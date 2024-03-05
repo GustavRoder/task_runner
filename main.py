@@ -11,15 +11,35 @@ JobEngine.init()
 
 
 @app.route("/")
-def hello_world():
-    return "<p>Hello, World!</p>"
+def list_jobs():
+    
+    jobs = JobEngine.list_jobs()
+
+    html = "<html><body><table>"
+    
+    headers = ['job_id','status','job_type']
+    
+    html += "<thead><tr>"
+    for h in headers:
+        html += f"<th>{h}</th>"
+    html += "</tr></thead>"
+    
+    html += "<tbody>"
+
+    for job in jobs:
+        html += "<tr>"
+        html += f"<td>{job['job_id']}</td>"
+        html += f"<td>{job['status']}</td>"
+        html += f"<td>{job['job_type']}</td>"
+        html += "</tr>"
+
+    html += "</tbody></table></body></html>"
+
+    return html
 
 
 
 
-@app.route("/api-list2")
-def api_list():
-    return "API"
 
 
 
@@ -27,7 +47,12 @@ def api_list():
 @app.route("/api/jobs/add")
 def api_jobs_add():
 
-    return JobEngine.add_job()
+    data = {
+        "job_type": "cmd",
+        "cmd": "ll /tmp",
+    }
+
+    return JobEngine.add_job(data)
 
 
 
