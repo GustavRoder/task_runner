@@ -1,13 +1,18 @@
 from datetime import datetime
 
 import json
+import multiprocessing as mp
 import os
+import shutil
+import time
 import uuid
 
 
 
 
 
+
+s_concurrent_job_cnt = 2
 s_jobs_folder = '/tmp/job-engine/'
 
 
@@ -20,11 +25,25 @@ class JobEngine:
 
 
 
-    @staticmethod
-    def init():
+
+
+
+    def __init__(self):
 
         if os.path.exists(s_jobs_folder)==False:
             os.mkdir(s_jobs_folder)
+        
+
+
+
+
+
+    @staticmethod
+    def check_jobs():
+
+        jobs = JobEngine.list_jobs()
+        print(jobs)
+
 
 
 
@@ -59,9 +78,8 @@ class JobEngine:
         job_data_file = open(os.path.join(s_jobs_folder,job_id,'_job.data'),'r')
         
         file_content = ''.join(job_data_file.readlines())
-        print(file_content)
         data = json.loads(file_content)
-        # data = {}
+
         return data
 
 
@@ -78,11 +96,26 @@ class JobEngine:
 
         data["job_id"] = job_id
         data["status"] = "not-started"
-        data["dt_added"] = datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S.%f")
+        data["dt_added"] = datetime.now().strftime("%Y-%m-%d %H:%M:%S.%f")
 
         JobEngine.write_job_data_file(job_id, data)
 
+        JobEngine.check_jobs()
+
         return job_id
+
+
+
+
+
+
+
+    @staticmethod
+    def remove_job(job_id):
+
+        shutil.rmtree(os.path.join(s_jobs_folder,job_id))
+
+
 
 
 
@@ -94,6 +127,61 @@ class JobEngine:
         if os.path.exists(os.path.join(s_jobs_folder,job_id))==False:
             raise Exception(f"A job with id='{job_id}' does not exist!")
         
+        job_data = JobEngine.read_job_data_file(job_id)
+        
+        # Check for concurrent runnnig jobs
+
+        jobs = JobEngine.list_jobs()
+        running_jobs = [j for j in jobs if j['status']=='running']
+        if len(running_jobs)>=s_concurrent_job_cnt:
+            raise Exception('ERROR: The number of concurrent running jobs has reached its maximum!')
+        
+        # Start job
+
+        print(f'Starting job_id={job_data["job_id"]}!')
+
+        job_data["status"] = "running"
+        JobEngine.write_job_data_file(job_id, job_data)
+
+        #JobQueue.start_job(job_data)
+
+
+        print(job_data)
+
+        p = mp.Process(target=JobEngine.do_work, args=[job_data])
+        
+        # if len(self.running_jobs)>s_concurrent_job_cnt:
+        #     raise Exception("ERROR: Cannot start job, since the limit of number of running jobs have been reached!")
+        # self.running_jobs.append(p)
+        
+        p.start()
+        p.join()
+        
+
+
+
+
+    @staticmethod
+    def do_work(data):
+
+        print('----------------------------------------------')
+        print(data)
+        print('Executing CMD:')
+
+        print("sleep......")
+        time.sleep(5)
+        print("done sleeping!")
+
+        exit_code = os.system('ls')
+        
+        print('----------------------------------------------')
+
+        print(exit_code)
+
+
+        return f'done: {exit_code}'
+
+
 
 
 
@@ -107,6 +195,11 @@ class JobEngine:
         for job_id in os.listdir(os.path.join(s_jobs_folder)):
             if os.path.isdir(os.path.join(s_jobs_folder,job_id)):
                 jobs.append(JobEngine.read_job_data_file(job_id))
+
+        for job in jobs:
+            job["dt_added"] = datetime.strptime(job["dt_added"],"%Y-%m-%d %H:%M:%S.%f")
+
+        jobs = sorted(jobs, key=lambda x: x["dt_added"])
 
         return jobs
 
