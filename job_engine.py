@@ -12,7 +12,7 @@ import uuid
 
 
 
-s_concurrent_job_cnt = 5
+s_concurrent_job_cnt = 1
 s_jobs_folder = '/tmp/job-engine/'
 
 
@@ -73,9 +73,28 @@ class JobEngine:
 
         file_content = json.dumps(data, indent=2)
 
-        job_data_file = open(os.path.join(s_jobs_folder,job_id,'_job.data'),'w')
+        job_data_file = open(JobEngine.get_job_file(job_id),'w')
         job_data_file.write(file_content)
         job_data_file.close()
+
+
+
+
+
+
+    @staticmethod
+    def get_job_dir(job_id):
+        return os.path.join(s_jobs_folder,job_id)
+
+
+
+
+
+
+    @staticmethod
+    def get_job_file(job_id):
+        return os.path.join(JobEngine.get_job_dir(job_id),'_job.data')
+
 
 
 
@@ -84,7 +103,7 @@ class JobEngine:
     @staticmethod
     def read_job_data_file(job_id):
 
-        job_data_file = open(os.path.join(s_jobs_folder,job_id,'_job.data'),'r')
+        job_data_file = open(JobEngine.get_job_file(job_id),'r')
         
         file_content = ''.join(job_data_file.readlines())
         data = json.loads(file_content)
@@ -101,7 +120,10 @@ class JobEngine:
     def add_job(data):
 
         job_id = JobEngine.create_job_id()
-        os.mkdir(os.path.join(s_jobs_folder,job_id))
+        job_dir = JobEngine.get_job_dir(job_id)
+        
+        os.mkdir(job_dir)
+        os.mkdir(os.path.join(job_dir,'data'))
 
         data["job_id"] = job_id
         data["status"] = "not-started"
@@ -133,7 +155,7 @@ class JobEngine:
     @staticmethod
     def start_job(job_id):
         
-        if os.path.exists(os.path.join(s_jobs_folder,job_id))==False:
+        if os.path.exists(JobEngine.get_job_dir(job_id))==False:
             raise Exception(f"A job with id='{job_id}' does not exist!")
         
         job_data = JobEngine.read_job_data_file(job_id)
@@ -164,11 +186,28 @@ class JobEngine:
 
 
 
-
     @staticmethod
     def do_work(job_data):
 
+        ret_val = None
+
+        if job_data['job_type'] == 'cmd':
+            ret_val = JobEngine.do_work_cmd(job_data)
+
+        return ret_val
+
+
+
+
+
+
+
+    @staticmethod
+    def do_work_cmd(job_data):
+
         print('----------------------------------------------')
+        print(os.getcwd())
+        os.chdir(JobEngine.get_job_dir(job_data['job_id']))
         print(job_data)
         print('Executing CMD:')
 
@@ -176,7 +215,7 @@ class JobEngine:
         time.sleep(5)
         print("done sleeping!")
 
-        exit_code = os.system('ls')
+        exit_code = os.system('ls > data/out.data')
         
         print('----------------------------------------------')
 
@@ -196,13 +235,14 @@ class JobEngine:
 
 
 
+
     @staticmethod
     def list_jobs():
 
         jobs = []
 
-        for job_id in os.listdir(os.path.join(s_jobs_folder)):
-            if os.path.isdir(os.path.join(s_jobs_folder,job_id)):
+        for job_id in os.listdir(s_jobs_folder):
+            if os.path.isdir(JobEngine.get_job_dir(job_id)):
                 jobs.append(JobEngine.read_job_data_file(job_id))
 
         for job in jobs:
