@@ -12,7 +12,7 @@ import uuid
 
 
 
-s_concurrent_job_cnt = 2
+s_concurrent_job_cnt = 5
 s_jobs_folder = '/tmp/job-engine/'
 
 
@@ -42,7 +42,16 @@ class JobEngine:
     def check_jobs():
 
         jobs = JobEngine.list_jobs()
-        print(jobs)
+        running_jobs = [j for j in jobs if j['status']=='running']
+        
+        if len(running_jobs)<s_concurrent_job_cnt:
+
+            jobs_not_started = [j for j in jobs if j['status']=='not-started']
+
+            jobs_2_run = min(s_concurrent_job_cnt-len(running_jobs), len(jobs_not_started))
+            for i in range(jobs_2_run):
+                JobEngine.start_job(jobs_not_started[i]['job_id'])
+            
 
 
 
@@ -145,7 +154,7 @@ class JobEngine:
 
         # Start the job
 
-        p = mp.Process(target=JobEngine.do_work, args=[job_data], daemon=True)
+        p = mp.Process(target=JobEngine.do_work, args=[job_data])
         
         p.start()
         # p.join()
@@ -176,6 +185,8 @@ class JobEngine:
         # Register finished
         job_data["status"] = "finished"
         JobEngine.write_job_data_file(job_data['job_id'], job_data)
+
+        JobEngine.check_jobs()
 
         return f'done: {exit_code}'
 

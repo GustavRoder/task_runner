@@ -10,51 +10,9 @@ je = JobEngine()
 app = Flask(__name__)
 
 
-@app.route('/')
+@app.route("/")
 def home():
    return render_template('index.html', jobs=JobEngine.list_jobs())
-
-
-
-
-#@app.route("/")
-def list_jobs():
-    
-    jobs = JobEngine.list_jobs()
-
-    html = "<html><body><table>"
-    
-    headers = ['job_id','dt_added','status','job_type','ctrl.start','ctrl.remove']
-    
-    html += "<thead><tr>"
-    for h in headers:
-        html += f"<th>{h}</th>"
-    html += "</tr></thead>"
-    
-    html += "<tbody>"
-
-    for job in jobs:
-        html += "<tr>"
-        
-        html += f"<td>{job['job_id']}</td>"
-        html += f"<td>{job['dt_added']}</td>"
-        html += f"<td>{job['status']}</td>"
-        html += f"<td>{job['job_type']}</td>"
-        
-        html += f"<td>"
-        html += "<a href='/api/jobs/start/" + job['job_id'] + "'>START</a>" if job['status']=='not-started' else ""
-        html += "</td>"
-        html += "<td>"
-
-        html += "<a href='/api/jobs/remove/" + job['job_id'] + "'>REMOVE</a>"
-        html += "</td>"
-
-        
-        html += "</tr>"
-
-    html += "</tbody></table></body></html>"
-
-    return html
 
 
 

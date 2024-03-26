@@ -1,5 +1,26 @@
 <html>
 
+<script>
+
+    let update_interval = 3000;
+
+
+    window.setTimeout( function() {
+    window.location.reload();
+    }, update_interval);
+
+
+    
+    function add_job() {
+        fetch('/api/jobs/add');
+
+
+    }
+
+</script>
+
+
+
 <head>
     <title>Task Runner</title>
 </head>
@@ -18,6 +39,10 @@
         </thead>
 
         <tbody>
+
+            <button onclick="add_job()">Add Job</button>
+
+            <h1>Jobs Overview</h1>
             {% for job in jobs %}
             <tr>
                 <td>{{job['job_id']}}</td>
