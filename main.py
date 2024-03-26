@@ -1,4 +1,4 @@
-from flask import Flask, redirect
+from flask import Flask, redirect, render_template
 from job_engine import JobEngine
 
 
@@ -10,9 +10,14 @@ je = JobEngine()
 app = Flask(__name__)
 
 
+@app.route('/')
+def home():
+   return render_template('index.html', jobs=JobEngine.list_jobs())
 
 
-@app.route("/")
+
+
+#@app.route("/")
 def list_jobs():
     
     jobs = JobEngine.list_jobs()

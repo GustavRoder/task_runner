@@ -143,29 +143,24 @@ class JobEngine:
         job_data["status"] = "running"
         JobEngine.write_job_data_file(job_id, job_data)
 
-        #JobQueue.start_job(job_data)
+        # Start the job
 
-
-        print(job_data)
-
-        p = mp.Process(target=JobEngine.do_work, args=[job_data])
-        
-        # if len(self.running_jobs)>s_concurrent_job_cnt:
-        #     raise Exception("ERROR: Cannot start job, since the limit of number of running jobs have been reached!")
-        # self.running_jobs.append(p)
+        p = mp.Process(target=JobEngine.do_work, args=[job_data], daemon=True)
         
         p.start()
-        p.join()
+        # p.join()
         
+
+
 
 
 
 
     @staticmethod
-    def do_work(data):
+    def do_work(job_data):
 
         print('----------------------------------------------')
-        print(data)
+        print(job_data)
         print('Executing CMD:')
 
         print("sleep......")
@@ -178,6 +173,9 @@ class JobEngine:
 
         print(exit_code)
 
+        # Register finished
+        job_data["status"] = "finished"
+        JobEngine.write_job_data_file(job_data['job_id'], job_data)
 
         return f'done: {exit_code}'
 

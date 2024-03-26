@@ -1,0 +1,43 @@
+<html>
+
+<head>
+    <title>Task Runner</title>
+</head>
+
+
+<body>
+
+
+    <table>
+
+        <thead>
+            <tr>
+                <th>job_id</th><th>dt_added</th><th>status</th><th>job_type</th><th>ctrl.start</th><th>ctrl.remove</th>
+            </tr>
+
+        </thead>
+
+        <tbody>
+            {% for job in jobs %}
+            <tr>
+                <td>{{job['job_id']}}</td>
+                <td>{{job['dt_added']}}</td>
+                <td>{{job['status']}}</td>
+                <td>{{job['job_type']}}</td>
+                <td>{% if job['status']=='not-started' %}
+                    <a href="/api/jobs/start/{{job['job_id']}}">START</a>
+                    {% endif %}
+                </td>
+                <td>{% if job['status']!='running' %}
+                    <a href="/api/jobs/remove/{{job['job_id']}}">REMOVE</a>
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+
+    </table>
+
+</body>
+
+</html>
