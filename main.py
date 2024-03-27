@@ -26,7 +26,7 @@ def api_jobs_add():
 
     data = {
         "job_type": "cmd",
-        "cmd": "ll /tmp",
+        "cmd": "ls /tmp",
     }
 
     return JobEngine.add_job(data)

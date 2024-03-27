@@ -205,26 +205,20 @@ class JobEngine:
     @staticmethod
     def do_work_cmd(job_data):
 
-        print('----------------------------------------------')
-        print(os.getcwd())
-        os.chdir(JobEngine.get_job_dir(job_data['job_id']))
-        print(job_data)
-        print('Executing CMD:')
+        # Make data folder
+        job_dir = JobEngine.get_job_dir(job_data['job_id'])
+        data_dir = os.path.join(job_dir,'data')
+        os.chdir(data_dir)
 
-        print("sleep......")
-        time.sleep(5)
-        print("done sleeping!")
-
-        exit_code = os.system('ls > data/out.data')
-        
-        print('----------------------------------------------')
-
-        print(exit_code)
+        # Execute command
+        cmd = f'{job_data["cmd"]} > cmd_output.data'
+        exit_code = os.system(cmd)
 
         # Register finished
         job_data["status"] = "finished"
         JobEngine.write_job_data_file(job_data['job_id'], job_data)
 
+        # Check for new jobs
         JobEngine.check_jobs()
 
         return f'done: {exit_code}'
