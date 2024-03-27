@@ -4,7 +4,6 @@ import json
 import multiprocessing as mp
 import os
 import shutil
-import time
 import uuid
 
 
@@ -23,16 +22,6 @@ s_jobs_folder = '/tmp/job-engine/'
 class JobEngine:
 
 
-
-
-
-
-
-    def __init__(self):
-
-        if os.path.exists(s_jobs_folder)==False:
-            os.mkdir(s_jobs_folder)
-        
 
 
 

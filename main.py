@@ -4,10 +4,13 @@ from job_engine import JobEngine
 
 
 
-je = JobEngine()
-
 
 app = Flask(__name__)
+
+
+
+
+
 
 
 @app.route("/")
