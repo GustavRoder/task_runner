@@ -15,8 +15,16 @@ app = Flask(__name__)
 
 @app.route("/")
 def home():
-   return render_template('index.html', jobs=JobEngine.list_jobs())
+   return api_jobs_list()
 
+
+
+
+
+
+@app.route("/api/jobs/list")
+def api_jobs_list():
+    return render_template('index.html', jobs=JobEngine.list_jobs())
 
 
 
