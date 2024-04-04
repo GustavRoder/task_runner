@@ -63,9 +63,14 @@ def api_jobs_start(job_id):
 @app.route("/api/jobs/remove/<job_id>")
 def api_jobs_remove(job_id):
 
-    JobEngine.remove_job(job_id)
-
-    print(f"Removed {job_id}!")
+    if job_id=='all':
+        JobEngine.remove_all_jobs()
+        print("Removed all jobs!")
+        
+    else:
+        JobEngine.remove_job(job_id)
+        print(f"Removed {job_id}!")
+    
     return redirect("/")
 
 

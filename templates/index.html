@@ -11,11 +11,16 @@
 
 
     
-    function add_job() {
+    function job_add() {
         fetch('/api/jobs/add');
-
-
     }
+
+
+    function jobs_remove_all() {
+        fetch('/api/jobs/remove/all');
+    }
+
+
 
 </script>
 
@@ -28,6 +33,11 @@
 
 <body>
 
+    <h1>Jobs Overview</h1>
+    <button onclick="job_add()">Add Job</button>
+    <button onclick="jobs_remove_all()">Remove All Jobs</button>
+    
+    <br /><br /><br />
 
     <table>
 
@@ -40,9 +50,7 @@
 
         <tbody>
 
-            <button onclick="add_job()">Add Job</button>
 
-            <h1>Jobs Overview</h1>
             {% for job in jobs %}
             <tr>
                 <td>{{job['job_id']}}</td>

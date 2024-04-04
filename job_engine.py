@@ -142,6 +142,21 @@ class JobEngine:
 
 
     @staticmethod
+    def remove_all_jobs():
+
+        for f in os.listdir(s_jobs_folder):
+            p = os.path.join(s_jobs_folder,f)
+
+            if os.path.isdir(p):
+                shutil.rmtree(p)
+
+
+
+
+
+
+
+    @staticmethod
     def start_job(job_id):
         
         if os.path.exists(JobEngine.get_job_dir(job_id))==False:
