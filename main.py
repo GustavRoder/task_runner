@@ -1,4 +1,4 @@
-from flask import Flask, redirect, render_template
+from flask import Flask, redirect, render_template, request
 from job_engine import JobEngine
 
 
@@ -34,12 +34,8 @@ def api_jobs_list():
 
 @app.route("/api/jobs/add", methods=['POST'])
 def api_jobs_add():
-
-    data = {
-        "job_type": "cmd",
-        "cmd": "ls /tmp",
-    }
-
+    
+    data = request.json
     return JobEngine.add_job(data)
 
 

@@ -25,6 +25,11 @@ class JobEngine:
 
 
 
+    # @staticmethod
+    # def get_all_
+
+
+
 
 
     @staticmethod
@@ -167,7 +172,7 @@ class JobEngine:
         # Check for concurrent runnnig jobs
 
         jobs = JobEngine.list_jobs()
-        running_jobs = [j for j in jobs if j['status']=='running']
+        running_jobs = [j for j in jobs if j['status'].startswith('running')]
         if len(running_jobs)>=s_concurrent_job_cnt:
             raise Exception('ERROR: The number of concurrent running jobs has reached its maximum!')
         

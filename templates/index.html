@@ -12,7 +12,16 @@
 
     
     function job_add() {
-        fetch('/api/jobs/add', {method:'POST'});
+        fetch('/api/jobs/add', {
+            method:'POST',
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                "job_type": "cmd",
+                "cmd": "ls /tmp"})            
+        });
     }
 
 
