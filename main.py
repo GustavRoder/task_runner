@@ -32,7 +32,7 @@ def api_jobs_list():
 
 
 
-@app.route("/api/jobs/add")
+@app.route("/api/jobs/add", methods=['POST'])
 def api_jobs_add():
 
     data = {
