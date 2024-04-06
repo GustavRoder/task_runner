@@ -12,7 +12,16 @@ import uuid
 
 
 s_concurrent_job_cnt = 1
+
 s_jobs_folder = '/tmp/job-engine/'
+s_jobs_dir = os.path.join(s_jobs_folder,'_jobs')
+s_data_dir = os.path.join(s_jobs_folder,'_data')
+s_batches_dir = os.path.join(s_data_dir,'batches')
+
+
+
+
+
 
 
 
@@ -25,8 +34,29 @@ class JobEngine:
 
 
 
-    # @staticmethod
-    # def get_all_
+
+
+    @staticmethod
+    def init():
+
+        # Main dir
+        if os.path.exists(s_jobs_folder)==False:
+            os.mkdir(s_jobs_folder)
+
+        # Jobs dir
+        if os.path.exists(s_jobs_dir)==False:
+            os.mkdir(s_jobs_dir)
+        
+        # Data dir
+        if os.path.exists(s_data_dir)==False:
+            os.mkdir(s_data_dir)
+
+        # Data -> Batches
+        if os.path.exists(s_batches_dir)==False:
+            os.mkdir(s_batches_dir)
+
+
+
 
 
 
@@ -62,6 +92,67 @@ class JobEngine:
 
 
 
+
+    @staticmethod
+    def get_batches():
+
+        batches = []
+
+        for fn in os.listdir(s_batches_dir):
+            if fn.endswith('.b'):
+                with open(os.path.join(s_batches_dir,fn), 'r') as f:
+                    batch = json.loads(f.read())
+                    batches.append(batch)
+
+        return batches
+
+
+
+
+
+
+
+    @staticmethod
+    def create_new_batch_id(original_batch_id):
+        
+        batch_id = str(uuid.uuid1())[:8]
+        with open (os.path.join(s_batches_dir,f'{batch_id}.b'), 'w', encoding='utf-8') as f:
+            j = {'batch_id':batch_id,'original_batch_id':original_batch_id}
+            json.dump(j, f, ensure_ascii=False, indent=2)
+
+        return batch_id
+
+
+
+
+
+
+
+    @staticmethod
+    def create_batch_id(original_batch_id='not-given'):
+
+        batch_id = None
+
+        if original_batch_id=='not-given':
+            batch_id = JobEngine.create_new_batch_id(original_batch_id)
+
+        else:
+            batches = JobEngine.get_batches()
+            for batch in batches:
+                if batch['original_batch_id']==original_batch_id:
+                    batch_id = batch['batch_id']
+            if batch_id is None:
+                 batch_id = JobEngine.create_new_batch_id(original_batch_id)
+
+        return batch_id
+
+
+
+
+
+
+
+
     @staticmethod
     def write_job_data_file(job_id, data):
 
@@ -78,7 +169,7 @@ class JobEngine:
 
     @staticmethod
     def get_job_dir(job_id):
-        return os.path.join(s_jobs_folder,job_id)
+        return os.path.join(s_jobs_dir,job_id)
 
 
 
@@ -111,23 +202,48 @@ class JobEngine:
 
 
     @staticmethod
-    def add_job(data):
+    def add_job(job):
+
+        original_job_id = job['job_id'] if 'job_id' in job else 'not-given'
+        original_batch_id = job['batch_id'] if 'batch_id' in job else 'not-given'
 
         job_id = JobEngine.create_job_id()
         job_dir = JobEngine.get_job_dir(job_id)
+
+        batch_id = JobEngine.create_batch_id(original_batch_id)
         
         os.mkdir(job_dir)
         os.mkdir(os.path.join(job_dir,'data'))
 
-        data["job_id"] = job_id
-        data["status"] = "not-started"
-        data["dt_added"] = datetime.now().strftime("%Y-%m-%d %H:%M:%S.%f")
+        job["job_id"] = job_id
+        job["original_job_id"] = original_job_id
+        job["batch_id"] = batch_id
+        job["original_batch_id"] = original_batch_id
+        job["status"] = "not-started"
+        job["dt_added"] = datetime.now().strftime("%Y-%m-%d %H:%M:%S.%f")
 
-        JobEngine.write_job_data_file(job_id, data)
+        JobEngine.write_job_data_file(job_id, job)
 
         JobEngine.check_jobs()
 
-        return job_id
+        return job
+
+
+
+
+
+
+
+
+    @staticmethod
+    def add_jobs(jobs):
+
+        jobs_added = []
+
+        for job in jobs:
+            jobs_added.append(JobEngine.add_job(job))
+
+        return jobs_added
 
 
 
@@ -138,7 +254,7 @@ class JobEngine:
     @staticmethod
     def remove_job(job_id):
 
-        shutil.rmtree(os.path.join(s_jobs_folder,job_id))
+        shutil.rmtree(os.path.join(s_jobs_dir,job_id))
 
 
 
@@ -149,8 +265,8 @@ class JobEngine:
     @staticmethod
     def remove_all_jobs():
 
-        for f in os.listdir(s_jobs_folder):
-            p = os.path.join(s_jobs_folder,f)
+        for f in os.listdir(s_jobs_dir):
+            p = os.path.join(s_jobs_dir,f)
 
             if os.path.isdir(p):
                 shutil.rmtree(p)
@@ -244,7 +360,7 @@ class JobEngine:
 
         jobs = []
 
-        for job_id in os.listdir(s_jobs_folder):
+        for job_id in os.listdir(s_jobs_dir):
             if os.path.isdir(JobEngine.get_job_dir(job_id)):
                 jobs.append(JobEngine.read_job_data_file(job_id))
 
@@ -254,6 +370,10 @@ class JobEngine:
         jobs = sorted(jobs, key=lambda x: x["dt_added"])
 
         return jobs
+
+
+
+
 
 
 

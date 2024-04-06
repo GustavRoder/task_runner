@@ -7,6 +7,9 @@ from job_engine import JobEngine
 
 app = Flask(__name__)
 
+JobEngine.init()
+
+
 
 
 
@@ -16,6 +19,8 @@ app = Flask(__name__)
 @app.route("/")
 def home():
    return api_jobs_list()
+
+
 
 
 
@@ -32,11 +37,26 @@ def api_jobs_list():
 
 
 
-@app.route("/api/jobs/add", methods=['POST'])
-def api_jobs_add():
+@app.route("/api/jobs/add-single", methods=['POST'])
+def api_jobs_add_single():
     
-    data = request.json
-    return JobEngine.add_job(data)
+    job = request.json
+    return JobEngine.add_job(job)
+
+
+
+
+
+
+
+
+@app.route("/api/jobs/add-multiple", methods=['POST'])
+def api_jobs_add_multiple():
+    
+    jobs = request.json
+    return JobEngine.add_jobs(jobs)
+
+
 
 
 
