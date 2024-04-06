@@ -33,17 +33,23 @@
 
     async function job_add_multiple() {
 
+        let jobs = []
+
+        for (let i=0; i<10; i++) {
+            jobs.push({
+                "batch_id": "B1",
+                "job_id": "J"+(i+1),
+                "job_type": "cmd",
+                "cmd": "ls /tmp"});            
+        }
+
         const response = await fetch('/api/jobs/add-multiple', {
             method:'POST',
             headers: {
                 'Accept': 'application/json',
                 'Content-Type': 'application/json'
             },
-            body: JSON.stringify([{
-                "batch_id": "B1",
-                "job_id": "J"+1,
-                "job_type": "cmd",
-                "cmd": "ls /tmp"}])
+            body: JSON.stringify(jobs)
         });
 
         const content = await response.json();
@@ -62,6 +68,35 @@
 
 
 
+
+
+
+<style>
+
+    .tbl1 {
+        font-family: Verdana, Geneva, Tahoma, sans-serif;
+        font-size: 12px;
+    }
+
+    .tbl1 th {
+        font-size: 14px;
+        padding: 0 10px;
+        text-align: left;
+    }
+
+    .tbl1 td {
+        margin: 4px;
+        padding: 0 10px;
+    }
+
+</style>
+
+
+
+
+
+
+
 <head>
     <title>Task Runner</title>
 </head>
@@ -76,11 +111,19 @@
     
     <br /><br /><br />
 
-    <table>
+    <table class="tbl1">
 
         <thead>
             <tr>
-                <th>job_id</th><th>dt_added</th><th>status</th><th>job_type</th><th>ctrl.start</th><th>ctrl.remove</th>
+                <th>batch_id</th>
+                <th>original_batch_id</th>
+                <th>job_id</th>
+                <th>original_job_id</th>
+                <th>dt_added</th>
+                <th>status</th>
+                <th>job_type</th>
+                <th>ctrl.start</th>
+                <th>ctrl.remove</th>
             </tr>
 
         </thead>
@@ -90,7 +133,10 @@
 
             {% for job in jobs %}
             <tr>
+                <td>{{job['batch_id']}}</td>
+                <td>{{job['original_batch_id']}}</td>
                 <td>{{job['job_id']}}</td>
+                <td>{{job['original_job_id']}}</td>
                 <td>{{job['dt_added']}}</td>
                 <td>{{job['status']}}</td>
                 <td>{{job['job_type']}}</td>
